@@ -18,14 +18,14 @@ module "vpc" {
 
 resource "aws_subnet" "public" {
     count = 3
-    vpc_id     = "${module.vpc.vpc_id}"
+    vpc_id     = module.vpc.vpc_id
     cidr_block = element(var.public_subnet_cidrs, count.index)
     map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "private" {
     count = 3
-    vpc_id     = "${module.vpc.vpc_id}"
+    vpc_id     = module.vpc.vpc_id
     cidr_block = element(var.private_subnet_cidrs, count.index)
     map_public_ip_on_launch = false
 }
@@ -41,6 +41,7 @@ resource "aws_nat_gateway" "natgw" {
 
 resource "aws_eip" "nat_eip" {
     vpc = true
+    tags = { Name = "nat_eip"}
 }
 
 resource "aws_route_table" "public" {
@@ -79,14 +80,13 @@ module "web-server" {
     source = "./modules/ec2"
     ami_id = local.ami_id
     instance_type = "t2.micro"
-    subnet_id = "" #some public subnet id
+    subnet_id = "aws_subnet.public[0].id"
     depends_on = [module.database]
 }
 module "database" {
     source = "./modules/ec2"
     ami_id = local.ami_id
     instance_type = "db.t2.micro"
-    subnet_id = "" #some private subnet id
+    subnet_id = "aws_subnet.private[0].id" 
     prevent_destroy = true
-
 }
