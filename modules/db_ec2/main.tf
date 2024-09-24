@@ -3,6 +3,7 @@ resource "aws_instance" "db" {
     ami           = var.ami_id
     instance_type = var.instance_type
     subnet_id     = var.subnet_id
+    user_data     = var.user_data
     lifecycle {
         prevent_destroy = true
         #could not use var or local as they throw errors:
